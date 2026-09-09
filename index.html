@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>比 Uber 會算 · 手搖最惠計算機</title>
+  <meta name="description" content="40% 折扣、滿額門檻、服務費、運費、平台加價。算出 1 到 4 杯手搖怎麼點才真正便宜。" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,680&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="top">
+    <p class="brand">比 Uber 會算</p>
+    <p class="lede">平台加價、服務費、運費、滿額才能折。券不是禮物，是算術題。</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="inputs-title">
+      <div class="panel-head">
+        <h1 id="inputs-title">今晚的菜單條件</h1>
+        <p class="hint">數字都能改。預設是店內 $55、平台每杯貴 $9、服務費 $15、運費 $25、超過 $79 折 40%。</p>
+      </div>
+
+      <div class="field">
+        <span class="label">店內單價</span>
+        <div class="chips" id="store-chips"></div>
+        <input id="store" class="num" type="number" min="0" step="1" value="55" inputmode="decimal" />
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <span class="label">平台每杯加價</span>
+          <div class="chips" id="markup-chips"></div>
+        </div>
+        <div class="field">
+          <span class="label">單張券折扣上限</span>
+          <div class="chips" id="cap-chips"></div>
+        </div>
+      </div>
+
+      <div class="grid-2 fee-row">
+        <div class="field">
+          <span class="label">服務費 / 每單</span>
+          <div class="chips" id="fee-chips"></div>
+          <input id="fee" class="num" type="number" min="0" step="1" value="15" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <span class="label">運費 / 每單</span>
+          <div class="chips" id="delivery-chips"></div>
+          <input id="delivery" class="num" type="number" min="0" step="1" value="25" inputmode="decimal" />
+          <p class="micro">會員免運就填 0。拆單會再收一次。</p>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <label class="field">
+          <span class="label">滿額門檻</span>
+          <input id="min" class="num" type="number" min="0" step="1" value="79" inputmode="decimal" />
+        </label>
+        <label class="field">
+          <span class="label">折扣 %</span>
+          <input id="rate" class="num" type="number" min="0" max="100" step="1" value="40" inputmode="decimal" />
+        </label>
+        <label class="field">
+          <span class="label">手上幾張券</span>
+          <input id="coupons" class="num" type="number" min="1" step="1" value="4" inputmode="numeric" />
+        </label>
+      </div>
+
+      <div class="toggles">
+        <label class="switch">
+          <input id="allow-store" type="checkbox" checked />
+          <span>可以走路去店裡拿</span>
+        </label>
+        <label class="switch">
+          <input id="min-inclusive" type="checkbox" />
+          <span>「滿 79」含門檻（不是超過）</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="stats" id="stats"></section>
+    <section class="notes" id="notes"></section>
+
+    <section class="results" aria-labelledby="result-title">
+      <div class="section-head">
+        <h2 id="result-title">1 到 4 杯，怎麼點</h2>
+        <p class="hint">每張小票是該杯數的最惠答案。實付已含服務費與運費。</p>
+      </div>
+      <div class="tickets" id="tickets"></div>
+    </section>
+
+    <section class="compare" aria-labelledby="table-title">
+      <h2 id="table-title">把數字攤在桌上</h2>
+      <div class="table-wrap">
+        <table id="compare-table">
+          <thead>
+            <tr>
+              <th>杯數</th>
+              <th>最惠點法</th>
+              <th>實付</th>
+              <th>每杯</th>
+              <th>店內自取</th>
+              <th>Uber 一次點</th>
+              <th>相對店內</th>
+              <th>用券</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="chart-block" aria-labelledby="chart-title">
+      <h2 id="chart-title">實付比較</h2>
+      <p class="hint">灰是走路去店裡，橘是 Uber 一次點完，螢光是計算機挑的最惠方案。</p>
+      <div class="legend">
+        <span><i class="swatch store"></i>店內自取</span>
+        <span><i class="swatch uber"></i>Uber 一次點完</span>
+        <span><i class="swatch best"></i>最惠方案</span>
+      </div>
+      <div class="chart" id="chart"></div>
+    </section>
+
+    <section class="details" aria-labelledby="detail-title">
+      <h2 id="detail-title">拆給你看</h2>
+      <div id="details"></div>
+    </section>
+
+    <section class="formula">
+      <h2>這題怎麼算</h2>
+      <p>平台小計 = 杯數 ×（店內價 + 加價）。過門檻才折：折抵 = min(小計 × 折扣%，上限)。</p>
+      <p class="payline">Uber 一單實付 = 小計 − 折抵 + <strong>服務費</strong> + <strong>運費</strong>。</p>
+      <p>店內實付 = 杯數 × 店內價。沒有用到券的 Uber 單，永遠比走路去店裡貴——加價、服務費、運費三個一起咬。</p>
+      <p class="fine">券沒有最高折抵時，拆單折扣不會變多，只會多付一輪服務費和運費。有上限才值得拆。App 若寫「滿 79」請打開上面的開關。</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>開源在 <a href="https://github.com/chentu030/Uber-">github.com/chentu030/Uber-</a>。數字是你的，結論是數學的。</p>
+  </footer>
+  <script src="./app.js"></script>
+</body>
+</html>
